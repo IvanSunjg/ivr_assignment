@@ -1,0 +1,34 @@
+a01 = {{cos(a + pi/2), 0,sin(a + pi/2),0}, {sin(a + pi/2), 0, -cos(a + pi/2),0},{0,1,0,2.5},{0,0,0,1}}
+a12 = {{cos(b + pi/2), 0,sin(b + pi/2),0}, {sin(b + pi/2), 0, -cos(b + pi/2),0},{0,1,0,0},{0,0,0,1}}
+a23 = {{cos(c), 0,-sin(c),3.5*cos(c)}, {sin(c), 0,cos(c),3.5*sin(c)},{0,-1,0,0},{0,0,0,1}}
+a34 = {{cos(d), -sin(d),0,3*cos(d)}, {sin(d),cos(d),0,3*sin(d)},{0,0,1,0},{0,0,0,1}}
+
+
+a02 = {{Sin[a] Sin[b], Cos[a], -(Cos[b] Sin[a]), 0}, {-(Cos[a] Sin[b]), Sin[a], Cos[a] Cos[b], 0}, {Cos[b], 0, Sin[b], 2.5}, {0, 0, 0, 1}}
+a24 = {{Cos[c] Cos[d], -(Cos[c] Sin[d]), -Sin[c], 3.5 Cos[c] + 3 Cos[c] Cos[d]}, {Cos[d] Sin[c], -(Sin[c] Sin[d]), Cos[c], 3.5 Sin[c] + 3 Cos[d] Sin[c]}, {-Sin[d], -Cos[d], 0, -3 Sin[d]}, {0, 0, 0, 1}}
+
+{3.5 Cos(c) + 3 Cos(c) Cos(d), 3.5 Sin(c) + 3 Sin(c) Cos(d), -3 Sin(d), 1}
+
+x = (3.5 Cos[c] + 3 Cos[c] Cos[d]) Sin[a] Sin[b] + Cos[a] (3.5 Sin[c] + 3 Cos[d] Sin[c]) + 3 Cos[b] Sin[a] Sin[d]
+or  sin(a) (sin(b) cos(c) (3 cos(d) + 3.5) + 3 cos(b) sin(d)) + cos(a) sin(c) (3 cos(d) + 3.5)
+
+y = cos(a) (sin(b) cos(c) (-3 cos(d) - 3.5) - 3 cos(b) sin(d)) + sin(a) sin(c) (3 cos(d) + 3.5)
+
+z = cos(b) cos(c) (3 cos(d) + 3.5) - 3 sin(b) sin(d) + 2.5
+
+j11 = (-3.5 - 3 cos(d)) sin(a) sin(c) + cos(a) (cos(c) (3.5 + 3 cos(d)) sin(b) + 3 cos(b) sin(d))
+j12 = sin(a) (cos(b) cos(c) (3 cos(d) + 3.5) - 3 sin(b) sin(d))
+j13 = -3 sin(a) sin(b) cos(d) sin(c) - 3.5 sin(a) sin(b) sin(c) + 3 cos(a) cos(d) cos(c) + 3.5 cos(a) cos(c)
+j14 = sin(a) (3 cos(b) cos(d) - 3 sin(b) cos(c) sin(d)) - 3 cos(a) sin(c) sin(d)
+
+j21 = sin(a) (sin(b) cos(c) (3 cos(d) + 3.5) + 3 cos(b) sin(d)) + cos(a) sin(c) (3 cos(d) + 3.5)
+j22 = cos(a) (cos(b) cos(c) (-3 cos(d) - 3.5) + 3 sin(b) sin(d))
+j23 = 3 cos(a) sin(b) cos(d) sin(c) + 3.5 cos(a) sin(b) sin(c) + 3 sin(a) cos(d) cos(c) + 3.5 sin(a) cos(c)
+j24 = cos(a) (3 sin(b) cos(c) sin(d) - 3 cos(b) cos(d)) - 3 sin(a) sin(c) sin(d)
+
+j31 = 0
+j32 = sin(b) cos(c) (-3 cos(d) - 3.5) - 3 cos(b) sin(d)
+j33 = cos(b) (-3 cos(d) - 3.5) sin(c)
+j34 = -3 (cos(b) cos(c) sin(d) + sin(b) cos(d))
+
+
