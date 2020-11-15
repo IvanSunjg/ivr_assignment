@@ -17,11 +17,13 @@ class robot_control:
     rospy.init_node('robot_control', anonymous=True)
 
     # subscriber for joint angles
-    self.joints_sub = rospy.Subscriber("/joints_ang",Float64MultiArray,self.callback)
+    self.joints_sub = rospy.Subscriber("/joints_ang",Float64MultiArray,self.get_joints)
+
     # subscriber for target object position
-    self.target_sub = rospy.Subscriber("/target_pos",Float64MultiArray,self.callback)
+    self.target_sub = rospy.Subscriber("/target_pos",Float64MultiArray,self.get_target)
+    
     # subscriber for end_effector position
-    self.end_effector_sub = rospy.Subscriber("/end_effector_pos",Float64MultiArray,self.callback)
+    self.end_effector_sub = rospy.Subscriber("/end_effector_pos",Float64MultiArray,self.get_end_effector)
     
     # initialize a publisher to send predicted robot end-effector position
     self.end_effector_pub = rospy.Publisher("/end_effector_pred",Float64MultiArray, queue_size=10)
@@ -39,6 +41,11 @@ class robot_control:
     self.error = np.array([0.0,0.0,0.0], dtype='float64')  
     self.error_d = np.array([0.0,0.0,0.0], dtype='float64') 
 
+  # Getter for the subscribing data
+  def get_joints(self,joints): return joints.data
+  def get_target(self,target): return target.data
+  def get_end_effector(self,end_effector): return end_effector.data
+
   # Calculate the forward kinematics
   def forward_kinematics(self,joints):
     a,b,c,d = joints
@@ -49,7 +56,7 @@ class robot_control:
     return end_effector
 
   # Calculate the robot Jacobian
-  def calculate_jacobian(self,joints):
+  def jacobian(self,joints):
     a,b,c,d = joints
     j11 = (-3.5-3*np.cos(d))*np.sin(a)*np.sin(c) + np.cos(a)*(np.cos(c)*(3.5+3*np.cos(d))*np.sin(b) + 3*np.cos(b)*np.sin(d))
     j12 = np.sin(a)*(np.cos(b)*np.cos(c)*(3*np.cos(d)+3.5)-3*np.sin(b)*np.sin(d))
@@ -67,7 +74,7 @@ class robot_control:
     return jacobian
 
   # Closed control of the joints
-  def control_closed(self):
+  def control_closed(self,end_effector,target,joints):
     # P gain
     K_p = np.array([[10,0,0],[0,10,0],[0,0,10]])
     # D gain
@@ -77,9 +84,9 @@ class robot_control:
     dt = cur_time - self.time_previous_step
     self.time_previous_step = cur_time
     # robot end-effector position
-    pos = self.end_effector_sub.data
+    pos = end_effector
     # desired trajectory
-    pos_d = self.target_sub.data
+    pos_d = target
     # TO DO Smmoothig
 
     # estimate derivative of error
@@ -87,9 +94,9 @@ class robot_control:
     # estimate error
     self.error = pos_d-pos
     # estimate initial value of joints
-    q = self.joints_sub.data 
+    q = joints
     # calculating the psudeo inverse of Jacobian
-    J_inv = np.linalg.pinv(self.calculate_jacobian(q)) 
+    J_inv = np.linalg.pinv(self.jacobian(q)) 
     # control input (angular velocity of joints)
     dq_d =np.dot(J_inv, ( np.dot(K_d,self.error_d.transpose()) + np.dot(K_p,self.error.transpose()) ) )
     # control input (angular position of joints)
@@ -97,17 +104,21 @@ class robot_control:
     return q_d
 
 
-  def callback(self,data):
+  def callback(self):
     
     # compare the estimated position of robot end-effector calculated by forward kinematics and image
-    x_e = self.forward_kinematics(self.joints_sub.data)
-    x_e_image = self.end_effector_sub.data
+    x_e = self.forward_kinematics(self.get_joints())
+    x_e_image = self.get_end_effector()
     print(x_e, x_e_image)
     self.end_effector=Float64MultiArray()
     self.end_effector.data= x_e
 
     # send control commands to joints
-    q_d = self.control_closed()
+    joints = self.get_joints()
+    target = self.get_target()
+    end_eff = self.get_end_effector()
+
+    q_d = self.control_closed(end_eff,target,joints)
     self.joint1=Float64()
     self.joint1.data= q_d[0]
     self.joint2=Float64()
