@@ -27,6 +27,10 @@ class joint_state:
         # initialize a publisher for end effector position
         self.end_eff_pub = rospy.Publisher("/end_pos", Int16MultiArray, queue_size=10)
 
+        self.joint2_pub = rospy.Publisher("/joints_ang2", Float64, queue_size=10)
+        self.joint3_pub = rospy.Publisher("/joints_ang3", Float64, queue_size=10)
+        self.joint4_pub = rospy.Publisher("/joints_ang4", Float64, queue_size=10)
+
         #[red_x,red_z,green_x,green_z,blue_x,blue_z,target_x,target_z]
         self.x_z = None
         # [red_y,red_z,green_y,green_z,blue_y,blue_z,target_y,target_z]
@@ -81,18 +85,25 @@ class joint_state:
         self.red = np.array([self.red_x-392,self.red_y-392,self.red_z-529])
         self.green = np.array([self.green_x-392,self.green_y-392,self.green_z-529])
         self.blue = np.array([self.blue_x-392,self.blue_y-392,self.blue_z-529])
-        self.target = np.array([392-self.target_x,392-self.target_y,529-self.target_z])
+        self.target = np.array([-(392-self.target_x),-(392-self.target_y),529-self.target_z])
         self.joint_angles = Float64MultiArray()
         self.joint_angles.data = self.detect_joint_angles(self.red,self.green,self.blue)
+        joint2 = self.joint_angles.data[0]
+        joint3 = self.joint_angles.data[1]
+        joint4 = self.joint_angles.data[2]
         self.target_pos = Int16MultiArray()
         self.target_pos.data = self.target
         self.end_eff_pos = Int16MultiArray()
-        self.red = np.array([392-self.red_x ,392-self.red_y,529-self.red_z])
+        self.red = np.array([-(392-self.red_x) ,-(392-self.red_y),529-self.red_z])
         self.end_eff_pos.data = self.red
         # Publish the joint angles
         self.joints_pub.publish(self.joint_angles)
         self.target_pub.publish(self.target_pos)
         self.end_eff_pub.publish(self.end_eff_pos)
+
+        self.joint2_pub.publish(joint2)
+        self.joint3_pub.publish(joint3)
+        self.joint4_pub.publish(joint4)
 
 
 # call the class
