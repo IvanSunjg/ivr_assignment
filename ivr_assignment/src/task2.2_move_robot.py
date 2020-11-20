@@ -33,3 +33,14 @@ class robot_move:
         self.robot_joint4_pub.publish(self.joint4)
         rate = rospy.Rate(50)
         rate.sleep()
+
+def main(args):
+  rc = robot_control()
+  try:
+    rospy.spin()
+  except KeyboardInterrupt:
+    print("Shutting down")
+
+# run the code if the node is called
+if __name__ == '__main__':
+    main(sys.argv)
