@@ -31,6 +31,8 @@ class joint_state:
         self.joint3_pub = rospy.Publisher("/joints_ang3", Float64, queue_size=10)
         self.joint4_pub = rospy.Publisher("/joints_ang4", Float64, queue_size=10)
 
+        rospy.sleep(0.4)
+
         #[red_x,red_z,green_x,green_z,blue_x,blue_z,target_x,target_z]
         self.x_z = None
         # [red_y,red_z,green_y,green_z,blue_y,blue_z,target_y,target_z]
@@ -45,12 +47,18 @@ class joint_state:
         joint_3 = np.arctan2(np.abs(green[0]-blue[0]),new_z_2)
         if (green[0]<blue[0]):
             joint_3 = -joint_3
-        green_to_blue = blue - green
+        blue_to_green = green - blue
         green_to_red = red - green
-        joint_4 = np.pi - np.arccos(np.dot(green_to_blue, green_to_red) /
-                                    (np.linalg.norm(green_to_blue) * np.linalg.norm(green_to_red)))
-        if(red[0]<green[0]):
-            joint_4 = -joint_4
+        joint_4 = np.arccos(np.dot(blue_to_green, green_to_red) /
+                                    (np.linalg.norm(blue_to_green) * np.linalg.norm(green_to_red)))
+        s_1 = np.sqrt((green[0]-blue[0])**2+(green[1]-blue[1])**2)
+        s_2 = np.sqrt((red[0]-blue[0])**2+(red[1]-blue[1])**2)
+        if(joint_2<0):
+            if((red[2]-blue[2])<(s_2/s_1)*(green[2]-blue[2])):
+                joint_4 = -joint_4
+        if (joint_2>0):
+            if((red[2]-blue[2])>(s_2/s_1)*(green[2]-blue[2])):
+                joint_4 = -joint_4
         return np.array([joint_2,joint_3,joint_4])
 
     def callback(self,x_z_pos,y_z_pos):
@@ -82,10 +90,10 @@ class joint_state:
         else:self.blue_z = self.blue_z_2
         if (self.target_z_2 == 0): self.target_z =self.target_z_1
         else:self.target_z = self.target_z_2
-        self.red = np.array([self.red_x-392,self.red_y-392,self.red_z-529])
-        self.green = np.array([self.green_x-392,self.green_y-392,self.green_z-529])
-        self.blue = np.array([self.blue_x-392,self.blue_y-392,self.blue_z-529])
-        self.target = np.array([-(392-self.target_x),-(392-self.target_y),529-self.target_z])
+        self.red = np.array([self.red_x-392,self.red_y-392,529-self.red_z])
+        self.green = np.array([self.green_x-392,self.green_y-392,529-self.green_z])
+        self.blue = np.array([self.blue_x-392,self.blue_y-392,529-self.blue_z])
+        self.target = np.array([self.target_x-392,self.target_y-392,529-self.target_z])
         self.joint_angles = Float64MultiArray()
         self.joint_angles.data = self.detect_joint_angles(self.red,self.green,self.blue)
         joint2 = self.joint_angles.data[0]
@@ -94,7 +102,6 @@ class joint_state:
         self.target_pos = Int16MultiArray()
         self.target_pos.data = self.target
         self.end_eff_pos = Int16MultiArray()
-        self.red = np.array([-(392-self.red_x) ,-(392-self.red_y),529-self.red_z])
         self.end_eff_pos.data = self.red
         # Publish the joint angles
         self.joints_pub.publish(self.joint_angles)
