@@ -23,9 +23,9 @@ class joint_state:
         # initialize a publisher for joint angles
         self.joints_pub = rospy.Publisher("/joints_ang", Float64MultiArray, queue_size=10)
         # initialize a publisher for target object position
-        self.target_pub = rospy.Publisher("/target_pos", Int16MultiArray, queue_size=10)
+        self.target_pub = rospy.Publisher("/target_pos", Float64MultiArray, queue_size=10)
         # initialize a publisher for end effector position
-        self.end_eff_pub = rospy.Publisher("/end_pos", Int16MultiArray, queue_size=10)
+        self.end_eff_pub = rospy.Publisher("/end_pos", Float64MultiArray, queue_size=10)
 
         self.joint2_pub = rospy.Publisher("/joints_ang2", Float64, queue_size=10)
         self.joint3_pub = rospy.Publisher("/joints_ang3", Float64, queue_size=10)
@@ -40,7 +40,7 @@ class joint_state:
 
     def detect_joint_angles(self,red,green,blue):
         new_z_1 = np.sqrt((green[0]-blue[0])**2+(green[2]-blue[2])**2)
-        joint_2 = np.arctan2(np.abs(green[1]-blue[1]),np.abs(green[2]-blue[2]))
+        joint_2 = np.arctan2(np.abs(green[1]-blue[1]),new_z_1)
         if(green[1]>blue[1]):
             joint_2 = -joint_2
         new_z_2 = np.sqrt((green[1]-blue[1])**2+(green[2]-blue[2])**2)
@@ -93,15 +93,17 @@ class joint_state:
         self.red = np.array([self.red_x-392,self.red_y-392,529-self.red_z])
         self.green = np.array([self.green_x-392,self.green_y-392,529-self.green_z])
         self.blue = np.array([self.blue_x-392,self.blue_y-392,529-self.blue_z])
-        self.target = np.array([self.target_x-392,self.target_y-392,529-self.target_z])
+        self.target = np.array([(self.target_x-392)*0.04,
+                                (self.target_y-392)*0.04,(529-self.target_z)*0.04])
         self.joint_angles = Float64MultiArray()
         self.joint_angles.data = self.detect_joint_angles(self.red,self.green,self.blue)
         joint2 = self.joint_angles.data[0]
         joint3 = self.joint_angles.data[1]
         joint4 = self.joint_angles.data[2]
-        self.target_pos = Int16MultiArray()
+        self.red = np.array([(self.red_x - 392)*0.04,(self.red_y - 392)*0.04,(529 - self.red_z)*0.04])
+        self.target_pos = Float64MultiArray()
         self.target_pos.data = self.target
-        self.end_eff_pos = Int16MultiArray()
+        self.end_eff_pos = Float64MultiArray()
         self.end_eff_pos.data = self.red
         # Publish the joint angles
         self.joints_pub.publish(self.joint_angles)
