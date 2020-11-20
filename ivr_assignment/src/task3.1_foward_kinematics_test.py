@@ -21,4 +21,4 @@ if __name__ == "__main__":
            ,[-1,-1,0.5,0.5]]	    #10
 
     for j in test:
-        print(j,fk(j))
+        print("Joints: "j," Position: "np.round(fk(j),2))
