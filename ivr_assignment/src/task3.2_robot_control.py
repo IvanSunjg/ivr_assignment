@@ -81,8 +81,8 @@ class robot_control:
   # Closed control of the joints
   def control_closed(self,end_effector,target):
     # PD parameter
-    K_p = np.array([[7,0,0],[0,7,0],[0,0,7]]) # 1
-    K_d = np.array([[0.7,0,0],[0,0.7,0],[0,0,0.7]]) # 0.1
+    K_p = np.array([[7,0,0],[0,7,0],[0,0,7]])
+    K_d = np.array([[0.7,0,0],[0,0.7,0],[0,0,0.7]])
     
     # calculate dt
     cur_time = np.array([rospy.get_time()])
