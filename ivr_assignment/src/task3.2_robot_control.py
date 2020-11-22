@@ -37,7 +37,7 @@ class robot_control:
     self.pre_time = np.array([rospy.get_time()],dtype='float64')
     self.error = np.array([0.0,0.0,0.0],dtype='float64')
     self.d_error = np.array([0.0,0.0,0.0],dtype='float64')
-    self.errors = [np.array([0.0,0.0,0.0],dtype="float64") for i in range(10)]
+    self.errors = []
     self.pre_joints = np.array([0.0,0.0,0.0,0.0],dtype='float64')
     print("finished init")
 
@@ -80,9 +80,10 @@ class robot_control:
 
   # Closed control of the joints
   def control_closed(self,end_effector,target):
-    # PD parameter
-    K_p = np.array([[7,0,0],[0,7,0],[0,0,7]])
+    # PID parameter
+    K_p = np.array([[0.5,0,0],[0,0.5,0],[0,0,0.5]])
     K_d = np.array([[0.7,0,0],[0,0.7,0],[0,0,0.7]])
+    K_i = np.array([[1e-5,0,0],[0,1e-5,0],[0,0,1e-5]])
     
     # calculate dt
     cur_time = np.array([rospy.get_time()])
@@ -91,18 +92,34 @@ class robot_control:
     
     # get end-effector position and target position
     # smoothing the end_effector position obtained from computer vision is effective
-    if len(self.end_poss) > 10:
+    if len(self.end_poss) > 5:
       self.end_poss.pop(0)
     self.end_poss.append(end_effector)
     pos = np.array(self.end_poss).mean(axis=0)
-    # smoothing of the target position is not effective.
-    pos_d = target
     
-    # calculate derivative of error and error
+    # smoothing of the target position is not effective.
+    if len(self.targets) > 3:
+      self.targets.pop(0)
+    self.targets.append(target)
+    pos_d = np.array(self.targets).mean(axis=0)
+    
+    # calculate derivative of error
     self.d_error = ((pos_d - pos) - self.error)/dt
-    print("d_error: ",self.d_error)
+    #print("d_error: ",self.d_error)
+    
+    # calculate error
     self.error = (pos_d - pos)
-    print("error: ",self.error)
+    #print("error: ",self.error)
+    
+    # calculate integral of error and need of integral error
+    if len(self.errors) > 10:
+      self.errors.pop(0)
+    self.errors.append(self.error)
+    #print("Integrated error: ",np.array(self.errors).sum(axis=0))
+    
+    need_i = 10 < np.linalg.norm(np.array(self.errors).sum(axis=0)) < 25
+    i_error = np.array(self.errors).sum(axis=0) if need_i else np.zeros(3)
+    #print("i_error: ",i_error)
     
     # get initial value of joints
     q = self.pre_joints
@@ -110,9 +127,9 @@ class robot_control:
     # calculating the psudeo inverse of Jacobian
     J_inv = np.linalg.pinv(self.jacobian(q)) 
     
-    # PD-control (angular velocity of joints)
-    print("eff_velo: ",K_d.dot(self.d_error.T) + K_p.dot(self.errors[-1].T))
-    dq_d = J_inv.dot(K_d.dot(self.d_error.T) + K_p.dot(self.errors[-1].T))
+    # PID-control (angular velocity of joints)
+    print("eff_velo: ",K_d.dot(self.d_error.T) + K_p.dot(self.error.T) + K_i.dot(i_error.T))
+    dq_d = J_inv.dot(K_d.dot(self.d_error.T) + K_p.dot(self.error.T) + K_i.dot(i_error.T))
     
     # control input (angular position of joints)
     q_d = q + (dt * dq_d)
@@ -160,5 +177,3 @@ def main(args):
 # run the code if the node is called
 if __name__ == '__main__':
     main(sys.argv)
-
-
