@@ -5,6 +5,7 @@ import sys
 import rospy
 import numpy as np
 from std_msgs.msg import String
+from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 
 class robot_move:
@@ -17,16 +18,19 @@ class robot_move:
         self.robot_joint3_pub = rospy.Publisher("/robot/joint3_position_controller/command", Float64, queue_size=10)
         self.robot_joint4_pub = rospy.Publisher("/robot/joint4_position_controller/command", Float64, queue_size=10)
         # run the call back
-        self.end_effector_sub2 = rospy.Subscriber("/end_pos",Float64MultiArray,self.callback)
+        self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw",Image,self.callback)
 
-    def call(self,data):
+    def callback(self,data):
         # set the angles 
         self.joint2=Float64()
         self.joint2.data = np.pi/2*np.sin(np.pi/15*rospy.get_time())
+        print(self.joint2.data)
         self.joint3=Float64()
         self.joint3.data = np.pi/2*np.sin(np.pi/18*rospy.get_time())
+        print(self.joint3.data)
         self.joint4=Float64()
         self.joint4.data = np.pi/2*np.sin(np.pi/20*rospy.get_time())
+        print(self.joint4.data)
         # publish angles
         self.robot_joint2_pub.publish(self.joint2)
         self.robot_joint3_pub.publish(self.joint3)
@@ -35,7 +39,7 @@ class robot_move:
         rate.sleep()
 
 def main(args):
-  rc = robot_control()
+  rm = robot_move()
   try:
     rospy.spin()
   except KeyboardInterrupt:
