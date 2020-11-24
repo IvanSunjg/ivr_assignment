@@ -102,6 +102,34 @@ class image_converter:
         (x, y), radius = cv2.minEnclosingCircle(c)
         return np.array([int(x), int(y)])
 
+  #This function is used for task 4.3
+  def detect_black(self,image):
+    # Isolate the blue colour in the image as a binary image
+    mask = cv2.inRange(image, (0, 0, 0), (180, 255, 50))
+    #To find the "red" and "green" spheres
+    circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, dp=1.0,
+                               minDist=1, maxRadius=10, param1=100, param2=10)
+    # We can only return the full data if we have detected the two "red" and "green" spheres.
+    if(circles is not None and len(circles) >=2):
+      circles = np.uint16(np.around(circles))
+      # compare the distances of two tagets and blue jooint
+      # calculate the euclidean distance
+      distance = np.array([np.sqrt(sum([(target[0] - 399) ** 2, (target[1] - 472) ** 2]))
+                           for target in circles[0]])
+      red = np.argmax(distance)
+      green = np.argmin(distance)
+      return [circles[0][red][0],circles[0][red][1],
+              circles[0][green][0],circles[0][green][1]]
+    #This means we only manage to find one single circle
+    elif (circles is not None and len(circles) == 1):
+      circles = np.uint16(np.around(circles))
+      return [circles[0][0][0],circles[0][0][1],circles[0][0][0],circles[0][0][1]]
+    #This means we do not manage to find any circle
+    #We return the coordinate of the blue sphere
+    else:
+      return [399,472,399,472]
+
+
 
 
   # Recieve data from camera 1, process it, and publish
@@ -111,22 +139,46 @@ class image_converter:
       self.cv_image1 = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
+
+    
+    mask = cv2.inRange(self.cv_image1, (0, 0, 0), (180, 255, 50))
+    circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, dp=1.0,
+                               minDist=1, maxRadius=10, param1=100, param2=10)
+    if circles is not None and len(circles) > 0:
+      for i in circles[0, :]:
+        # 外側の円を描く
+        cv2.circle(self.cv_image1, (i[0], i[1]), i[2], (0, 255, 0), 2)
+        # 中心の円を描く
+        cv2.circle(self.cv_image1, (i[0], i[1]), 2, (0, 0, 255), 2)
+    cv2.imshow("", self.cv_image1)
+    cv2.waitKey(1)
+    print(len(circles[0]))
     
     # Uncomment if you want to save the image
-    cv2.imwrite('image_copy_1.png', self.cv_image1)
+    #cv2.imwrite('image_copy_1.png', self.cv_image1)
 
-    im1=cv2.imshow('window1', self.cv_image1)
-    cv2.waitKey(1)
+    #im1=cv2.imshow('window1', self.cv_image1)
     # Publish the results
     try: 
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.cv_image1, "bgr8"))
     except CvBridgeError as e:
       print(e)
 
-    self.red = self.detect_red(self.cv_image1)
-    self.green = self.detect_green(self.cv_image1)
-    self.blue = self.detect_blue(self.cv_image1)
+    #self.red = self.detect_red(self.cv_image1)
+    #self.green = self.detect_green(self.cv_image1)
+    #self.blue = self.detect_blue(self.cv_image1)
+    #self.target = self.detect_target(self.cv_image1)
+
+    """
+    only uncomment the following code if you are testing the last part of the assignment
+    """
+
+    sp = self.detect_black(self.cv_image1)
+    self.red = np.array([sp[0],sp[1]])
+    self.green = np.array([sp[2],sp[3]])
+    self.blue = np.array([399,472])
     self.target = self.detect_target(self.cv_image1)
+
 
 
     self.pub = Int16MultiArray()
