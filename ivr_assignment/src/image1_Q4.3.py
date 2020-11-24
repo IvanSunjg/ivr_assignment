@@ -27,57 +27,6 @@ class image_converter:
     self.y_z_pub = rospy.Publisher("/robot/y_z", Int16MultiArray, queue_size=10)
 
 
-  def detect_red(self,image):
-    # Isolate the blue colour in the image as a binary image
-    mask = cv2.inRange(image, (0, 0, 100), (0, 0, 255))
-    # This applies a dilate that makes the binary region larger (the more iterations the larger it becomes)
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=3)
-    # Obtain the moments of the binary image
-    M = cv2.moments(mask)
-    # Calculate pixel coordinates for the centre of the blob
-    # M['m00'] ==  0 means that the red is invisible
-    if M['m00'] == 0:
-      # We can only obtain the y coordiante now
-      return np.array([392,0])
-    cy = int(M['m10'] / M['m00'])
-    cz = int(M['m01'] / M['m00'])
-    return np.array([cy, cz])
-
-  def detect_green(self,image):
-    # Isolate the blue colour in the image as a binary image
-    mask = cv2.inRange(image, (0, 100, 0), (0, 255, 0))
-    # This applies a dilate that makes the binary region larger (the more iterations the larger it becomes)
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=3)
-    # Obtain the moments of the binary image
-    M = cv2.moments(mask)
-    # Calculate pixel coordinates for the centre of the blob
-    # M['m00'] ==  0 means that the green is invisible now
-    if M['m00'] == 0:
-      # We can only obtain the y coordiante now
-      return np.array([392, 0])
-    cy = int(M['m10'] / M['m00'])
-    cz = int(M['m01'] / M['m00'])
-    return np.array([cy, cz])
-
-  def detect_blue(self,image):
-    # Isolate the blue colour in the image as a binary image
-    mask = cv2.inRange(image, (100, 0, 0), (255, 0, 0))
-    # This applies a dilate that makes the binary region larger (the more iterations the larger it becomes)
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=3)
-    # Obtain the moments of the binary image
-    M = cv2.moments(mask)
-    # M['m00'] ==  0 means that the green is invisible now
-    if M['m00'] == 0:
-      # We can only obtain the y coordiante now
-      return np.array([392, 0])
-    # Calculate pixel coordinates for the centre of the blob
-    cy = int(M['m10'] / M['m00'])
-    cz = int(M['m01'] / M['m00'])
-    return np.array([cy, cz])
-
   def detect_target(self,image):
     mask_orange = cv2.inRange(image, (5, 50, 50), (11, 255, 255))
     ret, thresh = cv2.threshold(mask_orange, 127, 255, cv2.THRESH_BINARY)
@@ -102,6 +51,56 @@ class image_converter:
         (x, y), radius = cv2.minEnclosingCircle(c)
         return np.array([int(x), int(y)])
 
+  #This function is used for task 4.3
+  def detect_black(self,image):
+    # Isolate the blue colour in the image as a binary image
+    mask = cv2.inRange(image, (0, 0, 0), (180, 255, 50))
+    # To find the "red" and "green" spheres
+    circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, dp=0.9,
+                               minDist=0.8, maxRadius=17, param1=100, param2=6)
+    circles = np.int16(np.around(circles))
+
+    # helper functions
+    def eucDis(u,v):
+        return np.sqrt((u-v).dot(u-v))
+
+    def isBlue(u,t=45):
+        blue = np.array([399,472])
+        return eucDis(blue,u) < t
+
+    def isYellow(u,t=45):
+        yellow = np.array([399,529])
+        return eucDis(yellow,u) < t
+
+    
+    # We can only return the full data if we have detected the two "red" and "green" spheres.
+    if circles is not None and len(circles[0]) >= 2:
+      print("more than 2 points")
+      centers = []
+      t = 45
+      while len(centers) < 2:
+        centers = [i for i in circles[0,:] if (not isBlue(np.array([i[0],i[1]]),t)) and (not isYellow(np.array([i[0],i[1]]),t))]
+        t -= 5
+      # compare the distances of two tagets and blue jooint
+      # calculate the euclidean distance
+      distance = np.array([eucDis(np.array([399,472]),np.array([target[0],target[1]]))for target in centers])
+      red = np.argmax(distance)
+      green = np.argmin(distance)
+      return [centers[red][0],centers[red][1], centers[green][0],centers[green][1]]
+    
+    # This means we only manage to find one single circle
+    elif (circles is not None and len(circles[0]) == 1):
+      print("single points")
+      circles = np.uint16(np.around(circles))
+      return [circles[0][0][0],circles[0][0][1],circles[0][0][0],circles[0][0][1]]
+    
+    # This means we do not manage to find any circle
+    # We return the coordinate of the blue sphere
+    else:
+      print("no points")
+      return [399,472,399,472]
+
+
   # Recieve data from camera 1, process it, and publish
   def callback1(self,data):
     # Recieve the image
@@ -110,23 +109,32 @@ class image_converter:
     except CvBridgeError as e:
       print(e)
 
-    cv2.imshow("", self.cv_image1)
-    cv2.waitKey(1)
-    
-    # Uncomment if you want to save the image
-    #cv2.imwrite('image_copy_1.png', self.cv_image1)
-
-    #im1=cv2.imshow('window1', self.cv_image1)
-
     # Publish the results
     try: 
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.cv_image1, "bgr8"))
     except CvBridgeError as e:
       print(e)
 
-    self.red = self.detect_red(self.cv_image1)
-    self.green = self.detect_green(self.cv_image1)
-    self.blue = self.detect_blue(self.cv_image1)
+
+    sp = self.detect_black(self.cv_image1)
+
+    # draw detected red circle
+    cv2.circle(self.cv_image1, (sp[0], sp[1]), 10, (0, 255, 0), 2)
+    # draw the center of the detected red circle
+    cv2.circle(self.cv_image1, (sp[0], sp[1]), 2, (0, 0, 255), 2)
+    # draw detected green circle
+    cv2.circle(self.cv_image1, (sp[2], sp[3]), 10, (0, 255, 0), 2)
+    # draw the center of the detected green circle
+    cv2.circle(self.cv_image1, (sp[2], sp[3]), 2, (0, 0, 255), 2)
+
+    cv2.imshow("", self.cv_image1)
+    cv2.waitKey(1)
+    # Uncomment if you want to save the image
+    #cv2.imwrite('image1_copy_4.3.png', self.cv_image1)
+
+    self.red = np.array([sp[0],sp[1]])
+    self.green = np.array([sp[2],sp[3]])
+    self.blue = np.array([399,472])
     self.target = self.detect_target(self.cv_image1)
 
     self.pub = Int16MultiArray()
@@ -136,6 +144,9 @@ class image_converter:
 
     #Publish the y and z coordinates
     self.y_z_pub.publish(self.pub)
+
+    rate = rospy.Rate(50)
+    rate.sleep()
 
 
 # call the class

@@ -80,7 +80,7 @@ class robot_control:
 
   # Closed control of the joints
   def control_closed(self,end_effector,target):
-    # PID parameter
+    # PD parameter
     K_p = np.array([[0.5,0,0],[0,0.5,0],[0,0,0.5]])
     K_d = np.array([[0.7,0,0],[0,0.7,0],[0,0,0.7]])
     K_i = np.array([[1e-5,0,0],[0,1e-5,0],[0,0,1e-5]])
@@ -177,3 +177,5 @@ def main(args):
 # run the code if the node is called
 if __name__ == '__main__':
     main(sys.argv)
+
+
