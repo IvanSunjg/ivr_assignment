@@ -5,7 +5,7 @@ By **Michitatsu Sato s1807428** and **Ivan Sun s1800640**
 
 ### **Task 2.1:**
 
-To run the Task2.1, first run the ***image1.py*** and ***image2.py***. Next run the ***state_estimation.py*** for estimating end-effector position and joints angles. You also need to run **move_robot.py** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2", "/joints_ang3", "/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command", "/robot/joint3_position_controller/command", "/robot/joint4_position_controller/command"] respectively.By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
+To run the Task2.1, first run the ***image1.py*** and ***image2.py***. Next run the ***state_estimation.py*** for estimating end-effector position and joints angles. You also need to run **move_robot.py** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2", "/joints_ang3", "/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command", "/robot/joint3_position_controller/command", "/robot/joint4_position_controller/command"] respectively. By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
 
   
 ### **Task 2.2:**
@@ -30,5 +30,5 @@ Robot sometimes corrupse and stop moving. Recommended to run the ***robot_contro
 
 **※ robot.urbf file have to be replaced for black robot.**
 
-To run the Task4.3, first run the ***image1_Q4.3.py*** and ***image2_Q4.3.py***. Next run the ***state_estimation.py*** for estimating joints angles. You also need to run ***move_robot.py*** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2", "/joints_ang3", "/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command", "/robot/joint3_position_controller/command", "/robot/joint4_position_controller/command"] respectively.By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
+To run the Task4.3, first run the ***image1_Q4.3.py*** and ***image2_Q4.3.py***. Next run the ***state_estimation.py*** for estimating joints angles. You also need to run ***move_robot.py*** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2", "/joints_ang3", "/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command", "/robot/joint3_position_controller/command", "/robot/joint4_position_controller/command"] respectively. By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
       
