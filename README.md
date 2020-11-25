@@ -3,6 +3,8 @@ This is the coursework repository for Introduction to Vision and Robotics
 
 By **Michitatsu Sato s1807428** and **Ivan Sun s1800640**
 
+**※ NOTICE!! for Part 2 and Part 3, "colored_ver_robot.urbf" file has to be renemaed to "robot.urbf" and replace the previous urbf file which is for black robot.**
+
 ### **Task 2.1:**
 
 To run the Task2.1, first run the ***image1.py*** and ***image2.py***. Next run the ***state_estimation.py*** for estimating end-effector position and joints angles. You also need to run **move_robot.py** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2", "/joints_ang3", "/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command", "/robot/joint3_position_controller/command", "/robot/joint4_position_controller/command"] respectively. By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
@@ -28,7 +30,7 @@ Robot sometimes corrupse and stop moving. Recommended to run the ***robot_contro
   
 ### **Task 4.3:**
 
-**※ robot.urbf file have to be replaced for black robot.**
+**※ NOTICE!! make sure to use urbf file for black robot.**
 
 To run the Task4.3, first run the ***image1_Q4.3.py*** and ***image2_Q4.3.py***. Next run the ***state_estimation.py*** for estimating joints angles. You also need to run ***move_robot.py*** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2", "/joints_ang3", "/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command", "/robot/joint3_position_controller/command", "/robot/joint4_position_controller/command"] respectively. By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
       
