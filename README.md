@@ -3,12 +3,9 @@ This is the coursework repository for Introduction to Vision and Robotics
 
 By **Michitatsu Sato s1807428** and **Ivan Sun s1800640**
 
-Task 2.1:
-To run the Task2.1, first run the **image1.py** and **image2.py**. Next run the **state_estimation.py** for estimating 
-end-effector position and joints angles. You also need to run **move_robot.py** for moving robot trajectory. The estimated joints 
-will be published on "/joints_ang" (or separately on ["/joints_ang2","/joints_ang3","/joints_ang4"]). The actual joint angles will be 
-published on ["/robot/joint2_position_controller/command","/robot/joint3_position_controller/command","/robot/joint4_position_controller/command"] 
-respectively.By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
+**Task 2.1**:
+
+To run the Task2.1, first run the **image1.py** and **image2.py**. Next run the **state_estimation.py** for estimating end-effector position and joints angles. You also need to run **move_robot.py** for moving robot trajectory. The estimated joints will be published on "/joints_ang" (or separately on ["/joints_ang2","/joints_ang3","/joints_ang4"]). The actual joint angles will be published on ["/robot/joint2_position_controller/command","/robot/joint3_position_controller/command","/robot/joint4_position_controller/command"] respectively.By using "rqt" command, the estimated joint angles and actual joint angles can be compared by ploting them.
 
     - Task 2.2:
       To run the Task2.2, first run the **image1.py** and **image2.py**. Next run the **state_estimation.py** for estimating target position. 
