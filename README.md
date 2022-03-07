@@ -1,7 +1,7 @@
 # IVR_Assignment
 This is the coursework repository for Introduction to Vision and Robotics
 
-By **Michitatsu Sato s1807428** and **Ivan Sun s1800640**
+By **Michitatsu Sato** and **Ivan Sun**
 
 **※ NOTICE!! for Part 2 and Part 3, "colored_ver_robot.urbf" file has to be renemaed to "robot.urbf" and replace the previous urbf file which is for black robot.**
 
